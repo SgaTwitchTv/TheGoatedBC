@@ -16,5 +16,18 @@ namespace KondziuTheBlockchain
         {
             InitializeComponent();
         }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            string inp = textBox1.Text;
+            string hash = Sha256BitLevel.ComputeHash(inp);
+            textBox2.Text = hash;
+        }
     }
 }
