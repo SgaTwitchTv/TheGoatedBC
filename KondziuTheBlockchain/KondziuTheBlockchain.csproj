@@ -46,6 +46,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Block.cs" />
+    <Compile Include="BlockchainDashboard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BlockchainDashboard.Designer.cs">
+      <DependentUpon>BlockchainDashboard.cs</DependentUpon>
+    </Compile>
     <Compile Include="SHA256.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -55,6 +62,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="BlockchainDashboard.resx">
+      <DependentUpon>BlockchainDashboard.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
