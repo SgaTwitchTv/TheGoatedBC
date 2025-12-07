@@ -22,8 +22,5 @@ namespace KondziuTheBlockchain
             Difficulty = difficulty;
             Transactions = transactions?.Copy() ?? new DataTable(); // safe copy
         }
-
-        //Block 0
-        public Block() : this(1, new string('0', 64), "", 0, 0, new DataTable()) { }
     }
 }

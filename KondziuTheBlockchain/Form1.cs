@@ -52,6 +52,9 @@ namespace KondziuTheBlockchain
             textBox3.Text = "1";     // Block ID
             textBox4.Text = "0";     // Nonce
             textBox2.Text = "waiting to mine...";
+            textBox6.Text = PreviousHash;
+            textBox6.ReadOnly = true;
+            textBox6.Font = new Font("Consolas", 9);
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -214,6 +217,11 @@ namespace KondziuTheBlockchain
                     return;
                 }
             }
+        }
+
+        private void textBox6_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
