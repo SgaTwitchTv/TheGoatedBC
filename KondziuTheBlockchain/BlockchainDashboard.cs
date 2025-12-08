@@ -38,7 +38,7 @@ namespace KondziuTheBlockchain
             var genesis = new Block(
                 id: 0,
                 previousHash: new string('0', 64),
-                hash: new string('0', 64),     // fake mined hash
+                hash: new string('0', 64),     // fake mined 0th hash
                 nonce: 0,
                 difficulty: 0,
                 transactions: new DataTable()
@@ -60,6 +60,7 @@ namespace KondziuTheBlockchain
             AddMiniBlock(firstBlock);
         }
         
+        //The block design
         private void AddMiniBlock(Block block)
         {
             bool isMined = !string.IsNullOrEmpty(block.Hash) && block.Hash != "";
