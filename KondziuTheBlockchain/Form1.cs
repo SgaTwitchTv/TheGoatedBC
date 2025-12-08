@@ -28,6 +28,7 @@ namespace KondziuTheBlockchain
             SetupForm();
         }
 
+        //SETUP
         private void SetupForm()
         {
             this.Text = "KondziuTheBlockchain - Proof of Work Mechanism";
@@ -150,7 +151,10 @@ namespace KondziuTheBlockchain
         {
 
         }
+        private void textBox6_TextChanged(object sender, EventArgs e)
+        {
 
+        }
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
 
@@ -161,8 +165,10 @@ namespace KondziuTheBlockchain
 
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        //THe mining being done asynchronously to avoid blocking the UI
+        private async void button1_Click(object sender, EventArgs e)
         {
+            // STOP
             if (button1.Text.Contains("STOP"))
             {
                 cts?.Cancel();
@@ -175,53 +181,72 @@ namespace KondziuTheBlockchain
                 return;
             }
 
-            if (!int.TryParse(textBox5.Text, out int difficulty) || difficulty < 1 || difficulty > 12) return;
+            if (!int.TryParse(textBox5.Text, out int difficulty) || difficulty < 1 || difficulty > 15)
+            {
+                MessageBox.Show("Difficulty 1–15");
+                return;
+            }
 
             string target = new string('0', difficulty);
-            uint nonce = 0;
             cts = new CancellationTokenSource();
 
             button1.Text = "STOP MINING";
             button1.BackColor = Color.DarkOrange;
             textBox4.Text = "0";
-            textBox2.Text = "mining...";  // we reuse textBox2 for live hash
-
+            textBox2.Text = "mining...";
             stopwatch.Restart();
 
+            // Build block data once
             string blockData = "";
             int txId = 1;
             foreach (DataRow r in ((DataTable)dataGridView1.DataSource).Rows)
-                blockData += $"{txId++}|{r["Date"]}|{r["From"]}|{r["To"]}|{r["Amount"]}\n";
-
-            while (!cts.IsCancellationRequested)
             {
-                nonce++;
-                textBox4.Text = nonce.ToString("#,##0");
-
-                string header = BlockID + PreviousHash + blockData + nonce;
-                string hash = Sha256BitLevel.ComputeHash(Sha256BitLevel.ComputeHash(header));
-
-                textBox2.Text = hash;
-
-                if (nonce % 1000 == 0)
-                    this.Text = $"Mining Block #{BlockID} | {nonce / stopwatch.Elapsed.TotalSeconds:F0} H/s";
-
-                Application.DoEvents();
-
-                if (hash.StartsWith(target))
-                {
-                    MinedBlock = new Block(BlockID, PreviousHash, hash, nonce, difficulty,
-                                          (DataTable)dataGridView1.DataSource);
-                    this.DialogResult = DialogResult.OK;
-                    this.Close();
-                    return;
-                }
+                blockData += $"{txId++}|{r["Date"]}|{r["From"]}|{r["To"]}|{r["Amount"]}\n";
             }
-        }
 
-        private void textBox6_TextChanged(object sender, EventArgs e)
-        {
+            // Run the mining loop on background thread
+            try
+            {
+                await Task.Run(() =>
+                {
+                    uint nonce = 0;
+                    while (!cts.IsCancellationRequested)
+                    {
+                        nonce++;
+                        string header = BlockID + PreviousHash + blockData + nonce;
+                        string hash = Sha256BitLevel.ComputeHash(Sha256BitLevel.ComputeHash(header));
 
+                        // Update UI safely from background thread
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            textBox4.Text = nonce.ToString("#,##0");
+                            textBox2.Text = hash;
+                            double hps = nonce / stopwatch.Elapsed.TotalSeconds;
+                            this.Text = $"Mining Block #{BlockID} | {hps:F1} H/s";
+                        });
+
+                        if (hash.StartsWith(target))
+                        {
+                            // Success! Save result and return to UI thread
+                            this.Invoke((MethodInvoker)delegate
+                            {
+                                MinedBlock = new Block(BlockID, PreviousHash, hash, nonce, difficulty,
+                                                      (DataTable)dataGridView1.DataSource);
+                                this.DialogResult = DialogResult.OK;
+                                this.Close();
+                            });
+                            return;
+                        }
+                    }
+                }, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                
+            }
+
+            button1.Text = "MINE THIS";
+            button1.BackColor = Color.Crimson;
         }
     }
 }
